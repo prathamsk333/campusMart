@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Menu, X } from "lucide-react";
+import { Link } from "react-router";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -52,22 +53,22 @@ export default function Header() {
             </ul>
           </nav>
           <div className="hidden md:flex gap-3">
-            <a
-              href="#"
+            <Link
+              to='/signin'
               className={`bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors ${
                 isScrolled ? "shadow-md" : ""
               }`}
             >
               Sign Up
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to='/signup'
               className={`bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors ${
                 isScrolled ? "shadow-md" : ""
               }`}
             >
               Log In
-            </a>
+            </Link>
           </div>
           <div className="md:hidden">
             <button
