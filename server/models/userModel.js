@@ -5,7 +5,6 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
 const crypto = require("crypto");
-const { hostname } = require("os");
 
 const userSchema = new mongoose.Schema({
   name: {
