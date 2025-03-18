@@ -1,8 +1,7 @@
 // Auth.tsx
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { Loader2, AlertCircle } from "lucide-react";
-import React from "react";
 
 interface UserInputs {
   email?: string;

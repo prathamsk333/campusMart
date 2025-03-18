@@ -54,7 +54,7 @@ export default function Header() {
           </nav>
           <div className="hidden md:flex gap-3">
             <Link
-              to='/signin'
+              to='/signup'
               className={`bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors ${
                 isScrolled ? "shadow-md" : ""
               }`}
@@ -62,7 +62,7 @@ export default function Header() {
               Sign Up
             </Link>
             <Link
-              to='/signup'
+              to='/signin'
               className={`bg-green-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors ${
                 isScrolled ? "shadow-md" : ""
               }`}
