@@ -23,7 +23,7 @@ app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 
 
-if (process.env.NODEENV === "development") {
+if (procestuis.env.NODEENV === "development") {
   app.use(morgan("dev"));
 }
 
