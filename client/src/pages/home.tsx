@@ -1,10 +1,9 @@
-import React from "react";
 import Header from "../components/Header";
-import CTA from "../components/LandingPage/CTA";
-import Features from "../components/LandingPage/Features";
-import Footer from "../components/LandingPage/Footer";
-import Hero from "../components/LandingPage/Hero";
-import Testimonials from "../components/LandingPage/Testimonials";
+import CTA from "../components/CTA.tsx";
+import Features from "../components/Features.tsx";
+import Footer from "../components/Footer";
+import Hero from "../components/Hero";
+import Testimonials from "@/components/Testimonials.js";
 
 const  Main=()=>{
    return (

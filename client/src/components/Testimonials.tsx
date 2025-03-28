@@ -41,7 +41,7 @@ export default function Testimonials() {
   );
 }
 
-function TestimonialCard({ name, role, content, avatar }) {
+function TestimonialCard({ name, role, content, avatar }:any) {
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <div className="flex items-center mb-4">

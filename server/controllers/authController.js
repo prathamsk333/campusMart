@@ -47,8 +47,8 @@ const createSendToken = async (user, statuscode, res) => {
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
-  console.log(req.body)
-  console.log("im in here ")
+  console.log(req.body);
+  console.log("im in here ");
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -68,10 +68,10 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  console.log(req.body)
+
+  console.log(User)
 
   const { email, password } = req.body;
-  //check if email and password exists
 
   if (!email || !password) {
     next(new AppError("please provide email and password", 400));
