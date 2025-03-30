@@ -1,11 +1,36 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useMutation } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Link } from 'react-router-dom';
 import { Leaf, LogIn, UserPlus } from 'lucide-react';
+import { setUser, setError } from "../utils/userslice";
+import Cookies from 'js-cookie';
+import { useDispatch } from 'react-redux';
+// @ts-ignore
+import { loginPOST, signUpPOST } from '../utils/http';
+
+interface UserData {
+  token: string;
+  name: string;
+  email: string;
+  id: string;
+  phone: string;
+}
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+interface SignUpFormData {
+  name: string;
+  email: string;
+  password: string;
+}
 
 // Enhanced page transition variants
 const pageVariants = {
@@ -56,18 +81,30 @@ const inputVariants = {
   })
 };
 
-// Login Component
-
-
-
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
 
-  const handleLogin = (e: { preventDefault: () => void; }) => {
+  const { mutate, isLoading } = useMutation<UserData, Error, LoginFormData>({
+    mutationFn: loginPOST,
+    onSuccess: (data) => {
+      Cookies.set("token", data.token, { expires: 7, path: "/" });
+      dispatch(setUser({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      }));
+    },
+    onError: (error) => {
+      dispatch(setError(error.message || "An unknown error occurred"));
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login attempted', { email, password });
+    mutate({ email, password });
   };
 
   return (
@@ -133,8 +170,9 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-green-600 hover:bg-green-700 transition-colors"
+                disabled={isLoading}
               >
-                <LogIn className="mr-2" /> Login
+                <LogIn className="mr-2" /> {isLoading ? "Logging in..." : "Login"}
               </Button>
             </motion.div>
             <motion.div
@@ -161,21 +199,55 @@ const Login = () => {
   );
 };
 
-// Signup Component
-const Signup = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+interface SignupFormValues {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
-  const handleSignup = (e: { preventDefault: () => void; }) => {
+const Signup = () => {
+  const [formData, setFormData] = useState<SignupFormValues>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const dispatch = useDispatch();
+
+  const { mutate, isLoading } = useMutation<UserData, Error, SignUpFormData>({
+    mutationFn: signUpPOST,
+    onSuccess: (data) => {
+      Cookies.set("token", data.token, { expires: 7, path: "/" });
+      dispatch(setUser({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      }));
+    },
+    onError: (error) => {
+      dispatch(setError(error.message || "An unknown error occurred"));
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+    if (formData.password !== formData.confirmPassword) {
+      dispatch(setError("Passwords do not match!"));
       return;
     }
-    // TODO: Implement signup logic
-    console.log('Signup attempted', { name, email, password });
+    
+    const { confirmPassword, ...signUpData } = formData;
+    mutate(signUpData);
   };
 
   return (
@@ -208,8 +280,8 @@ const Signup = () => {
               <Input 
                 id="name"
                 type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="Your full name"
                 className="border-green-300 focus:ring-green-500"
                 required
@@ -225,8 +297,8 @@ const Signup = () => {
               <Input 
                 id="email"
                 type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="your.email@iiitk.ac.in"
                 className="border-green-300 focus:ring-green-500"
                 required
@@ -242,8 +314,8 @@ const Signup = () => {
               <Input 
                 id="password"
                 type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Create a strong password"
                 className="border-green-300 focus:ring-green-500"
                 required
@@ -255,12 +327,12 @@ const Signup = () => {
               animate="animate"
               custom={3}
             >
-              <Label htmlFor="confirm-password" className="text-green-800">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-green-800">Confirm Password</Label>
               <Input 
-                id="confirm-password"
+                id="confirmPassword"
                 type="password" 
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 placeholder="Repeat your password"
                 className="border-green-300 focus:ring-green-500"
                 required
@@ -275,8 +347,9 @@ const Signup = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-green-600 hover:bg-green-700 transition-colors"
+                disabled={isLoading}
               >
-                <UserPlus className="mr-2" /> Create Account
+                <UserPlus className="mr-2" /> {isLoading ? "Creating account..." : "Create Account"}
               </Button>
             </motion.div>
             <motion.div
@@ -289,7 +362,7 @@ const Signup = () => {
               <span className="text-sm text-green-800">
                 Already have an account? {' '}
                 <Link 
-                  to="/login" 
+                  to="/signin" 
                   className="text-green-600 hover:underline"
                 >
                   Login
@@ -303,5 +376,4 @@ const Signup = () => {
   );
 };
 
-// Export both components
 export { Login, Signup };

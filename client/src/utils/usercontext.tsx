@@ -21,7 +21,13 @@ const isTokenExpired = (token: string | undefined) => {
   }
 };
 
-export const UserContext = createContext(null);
+interface UserContextType {
+  user: any;
+  setUser: React.Dispatch<any>;
+  logout: () => void;
+}
+
+export const UserContext = createContext<UserContextType | null>(null);
 
 export const UserProvider = ({ children }:any) => {
   const [user, setUser] = useState(() => {
