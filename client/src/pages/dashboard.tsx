@@ -4,6 +4,7 @@ import { UserButton } from "../components/user-button";
 import { ProductCard } from "../components/product-card";
 import { Button } from "../components/ui/button";
 import { PlusCircle } from "lucide-react";
+// @ts-ignore
 import { fetchitems } from "@/utils/http";
 interface ProductCardProps {
     id: string
@@ -19,7 +20,7 @@ interface ProductCardProps {
 
 export default function DashboardPage() {
   // Fetch items using React Query
-  const { data: availableItems, isLoading, isError } = useQuery({
+  const { data: availableItems, isLoading, isError } = useQuery<ProductCardProps[]>({
     queryKey: ["availableItems"],
     queryFn: fetchitems,
   });

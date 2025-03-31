@@ -3,34 +3,11 @@ import getToken from "./getToken";
 
 const API_BASE_URL = "http://localhost:3000/api/v1";
 
-export async function fetchEvent() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/tours`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      const error = new Error("Failed to fetch events");
-      error.status = response.status;
-      error.info = errorText;
-      throw error;
-    }
-
-    return (await response.json()).data.data;
-  } catch (error) {
-    console.error("fetchEvent error:", error);
-    throw error;
-  }
-}
 
 export async function fetchitems() {
   try {
-    const response = await fetch(`${API_BASE_URL}/getAllItems`, {
+    const response = await fetch(`${API_BASE_URL}/items/getAllItems`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +23,8 @@ export async function fetchitems() {
       throw error;
     }
 
-    return (await response.json()).data.data;
+    const responseData = await response.json();
+    return responseData.data?.items || [];
   } catch (error) {
     console.error("fetchitems error:", error);
     throw error;
