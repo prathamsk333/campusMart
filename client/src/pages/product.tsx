@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { BidForm } from "../components/bid-form"
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
 import { UserButton } from "../components/user-button"
-
+import { useQuery } from "@tanstack/react-query"
+//@ts-ignore
+import { getItemById } from "../utils/http"; // Adjust the path if necessary
 // Mock product data
-const product = {
+const productsample = {
   id: "1",
   name: "MacBook Pro 2019",
   minBid: 450,
@@ -37,13 +39,46 @@ const product = {
     { user: "Emily Rodriguez", amount: 450, time: "2023-05-15T12:20:00" },
   ],
 }
-
+export interface Product {
+  _id: string;
+  name: string;
+  shortDescription: string;
+  detailedDescription: string;
+  startingPrice: number;
+  biddingStartTime: string;
+  biddingEndTime: string;
+  condition: string;
+  category: string;
+  pickupLocation: string;
+  images: string[];
+  createdAt: string;
+  __v: number;
+}
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>()
-  const [selectedImage, setSelectedImage] = useState(0)
-  const isActive = new Date(product.endTime) > new Date()
-  const timeRemaining = isActive ? formatDistanceToNow(new Date(product.endTime), { addSuffix: true }) : "Auction ended"
+ 
+    if (!id) {
+      return <div>Error: User ID not found</div>;
+    }
+  
+    const { data: product, isLoading, isError } = useQuery<Product>({
+      queryKey: ["productDetails", id],
+      queryFn: () => getItemById(id), // Fetch product by ID
+    });
+    const [selectedImage, setSelectedImage] = useState(0);
 
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+  
+    if (isError || !product) {
+      return <div>Error loading product details</div>;
+    }
+  
+    const isActive = new Date(product.biddingEndTime) > new Date();
+    const timeRemaining = isActive
+      ? formatDistanceToNow(new Date(product.biddingEndTime), { addSuffix: true })
+      : "Auction ended";
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 border-b bg-white">
@@ -106,11 +141,11 @@ export default function ProductPage() {
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src="/placeholder.svg" alt={product.owner} />
-                  <AvatarFallback>{product.owner[0]}</AvatarFallback>
+                  <AvatarImage src="/placeholder.svg" alt={productsample.owner} />
+                  <AvatarFallback>{productsample.owner[0]}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-muted-foreground">
-                  {product.owner} ({product.ownerRollNo})
+                  {productsample.owner} ({productsample.ownerRollNo})
                 </span>
               </div>
             </div>
@@ -119,13 +154,13 @@ export default function ProductPage() {
               <Card className="flex-1">
                 <CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">Current Bid</div>
-                  <div className="text-2xl font-bold">${product.currentBid}</div>
+                  <div className="text-2xl font-bold">${productsample.currentBid}</div>
                 </CardContent>
               </Card>
               <Card className="flex-1">
                 <CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">Minimum Bid</div>
-                  <div className="text-2xl font-bold">${product.minBid}</div>
+                  <div className="text-2xl font-bold">${product.startingPrice}</div>
                 </CardContent>
               </Card>
               <Card className="w-full">
@@ -139,7 +174,7 @@ export default function ProductPage() {
               </Card>
             </div>
 
-            {isActive && <BidForm productId={id || ""} currentBid={product.currentBid} />}
+            {isActive && <BidForm productId={id || ""} currentBid={productsample.currentBid} />}
 
             <Tabs defaultValue="details">
               <TabsList className="w-full">
@@ -153,7 +188,8 @@ export default function ProductPage() {
               <TabsContent value="details" className="mt-4 space-y-4">
                 <div>
                   <h3 className="font-medium">Description</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{product.description}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{product.detailedDescription
+                    }</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -166,17 +202,17 @@ export default function ProductPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">Location</h3>
-                    <p className="text-sm text-muted-foreground">{product.location}</p>
+                    <p className="text-sm text-muted-foreground">{product.pickupLocation}</p>
                   </div>
                   <div>
                     <h3 className="font-medium">Auction Started</h3>
-                    <p className="text-sm text-muted-foreground">{new Date(product.startTime).toLocaleDateString()}</p>
+                    <p className="text-sm text-muted-foreground">{new Date(product.biddingStartTime).toLocaleDateString()}</p>
                   </div>
                 </div>
               </TabsContent>
               <TabsContent value="bids" className="mt-4">
                 <div className="space-y-2">
-                  {product.bids.map((bid, index) => (
+                  {productsample.bids.map((bid, index) => (
                     <div key={index} className="flex items-center justify-between rounded-lg border p-3">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">

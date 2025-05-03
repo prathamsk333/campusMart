@@ -1,3 +1,3 @@
 import { toast } from "sonner";
+export const useToast = () => ({ toast });
 
-export const useToast = toast;

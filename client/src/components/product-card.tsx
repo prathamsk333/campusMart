@@ -7,26 +7,27 @@ import { Badge } from "../components/ui/badge.tsx"
 
 interface ProductCardProps {
   product: {
-    id: string
-    name: string
-    minBid: number
-    startTime: string
-    endTime: string
-    owner: string
-    description: string
-    image: string
-  }
+    _id: string;
+    name: string;
+    startingPrice: number;
+    biddingStartTime: string;
+    biddingEndTime: string;
+    owner: string;
+    shortDescription: string;
+    images: string[];
+  };
 }
 
+
 export function ProductCard({ product }: ProductCardProps) {
-  const isActive = new Date(product.endTime) > new Date()
-  const timeRemaining = isActive ? formatDistanceToNow(new Date(product.endTime), { addSuffix: true }) : "Auction ended"
+  const isActive = new Date(product.biddingEndTime) > new Date()
+  const timeRemaining = isActive ? formatDistanceToNow(new Date(product.biddingEndTime), { addSuffix: true }) : "Auction ended"
 
   return (
-    <Link to={`/products/${product.id}`}>
+    <Link to={`/products/${product._id}`}>
       <Card className="h-full overflow-hidden transition-all hover:shadow-md">
         <div className="relative h-48 w-full">
-          <img src={product.image || "/placeholder.svg"} alt={product.name} className="h-full w-full object-cover" />
+          <img src={product.images[0] || "/placeholder.svg"} alt={product.name} className="h-full w-full object-cover" />
         </div>
         <CardHeader className="p-4 pb-0">
           <div className="flex items-start justify-between">
@@ -35,10 +36,10 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardHeader>
         <CardContent className="p-4 pt-2">
-          <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+          <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">{product.shortDescription}</p>
           <div className="flex items-center gap-1 text-sm">
             <DollarSign className="h-4 w-4 text-muted-foreground" />
-            <span>Min bid: ${product.minBid}</span>
+            <span>Min bid: ${product.startingPrice}</span>
           </div>
           <div className="mt-1 flex items-center gap-1 text-sm">
             <User className="h-4 w-4 text-muted-foreground" />

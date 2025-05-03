@@ -19,8 +19,14 @@ mongoose.connect(DB, {}).then(() => {
   // console.log(con.connections);
   console.log("DB connection successfull");
 });
+app.use(cors({
+  origin: "http://localhost:5173", // Change port if your frontend is running on a different one
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Allows cookies if needed
+}));
 
-app.use(cors());
+
 app.use(express.json({ limit: '10kb' }));
 
 

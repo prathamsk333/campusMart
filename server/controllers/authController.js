@@ -9,7 +9,7 @@ const User = require("../models/userModel");
 const catchAsync = require("../Utils/catchAsync");
 
 const AppError = require("../Utils/appError");
-
+const mongoose = require('mongoose')
 // const sendEmail = require('../Utils/email');
 
 const signToken = (id) =>
@@ -52,13 +52,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
-    role: req.body.role,
-    rollNo: req.body.rollNo,
-    batch: req.body.batch,
-    hostname: req.body.hostname,
     password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt,
   });
 
   const url = process.env.FROND_URL;
@@ -69,7 +63,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
 
-  console.log(User)
+  console.log(req.body)
 
   const { email, password } = req.body;
 
@@ -78,7 +72,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findOne({ email }).select("password");
-
+console.log(user);
   const correct = await user.passwordCorrect(password, user.password);
 
   if (!user || !correct) {
@@ -219,4 +213,25 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // 4) Log user in, send JWT
   createSendToken(user, 200, res);
+});
+exports.getuserdetails = catchAsync(async (req, res, next) => {
+  const { id } = req.body; // Take the ID from the request body
+
+  // Validate if the id is a valid MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(new AppError("Invalid user ID", 400));
+  }
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
+  });
 });

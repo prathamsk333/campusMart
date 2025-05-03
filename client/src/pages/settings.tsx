@@ -15,8 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '../components/ui/form'
-import { Input } from '../components/ui/input'
-import { Textarea } from '../components/ui/textarea'
+import { Input } from '../components/ui/input' 
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
 import { UserButton } from '../components/user-button'
 import { useToast } from '../hooks/use-toast'
@@ -24,8 +23,7 @@ import { useToast } from '../hooks/use-toast'
 const profileFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Invalid email address."),
-  rollNo: z.string().min(1, "Roll number is required."),
-  bio: z.string().max(160, "Bio must not be longer than 160 characters.").optional(),
+  rollNo: z.string().min(1, "Roll number is required.") ,
   currentPassword: z.string().optional(),
   newPassword: z.string().min(8, "Password must be at least 8 characters.").optional(),
   confirmPassword: z.string().optional(),
@@ -52,9 +50,8 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 // Mock user data
 const user = {
   name: "John Smith",
-  email: "john.smith@college.edu",
-  rollNo: "CS2021032",
-  bio: "Computer Science student interested in web development and AI. Looking to buy and sell textbooks and electronics.",
+  email: "johnsmith@iiitkottayam.ac.in",
+  rollNo: "2023bcs0xxx",
   avatar: "/placeholder.svg",
 }
 
@@ -64,14 +61,13 @@ export default function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: user.name,
       email: user.email,
       rollNo: user.rollNo,
-      bio: user.bio,
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
@@ -88,11 +84,7 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>{name}</FormLabel>
                             <FormControl>
-                              {name=='bio'? <Textarea
-                                placeholder="Tell us a little about yourself"
-                                className="resize-none"
-                                {...field}
-                              />:  <Input placeholder={`Your ${name}`} {...field} />}
+                             <Input placeholder={`Your ${name}`} {...field} />
                             
                             </FormControl>
                             <FormMessage />
@@ -112,10 +104,7 @@ export default function SettingsPage() {
     setTimeout(() => {
       console.log(data)
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      })
+      toast("profile updated")
       
       setIsSubmitting(false)
     }, 1000)
@@ -169,7 +158,7 @@ export default function SettingsPage() {
                       <FormComponent  form ={form} name={"name"}/>  
                       <FormComponent  form ={form} name={"email"}/>  
                       <FormComponent  form ={form} name={"rollNo"}/> 
-                      <FormComponent form={form} name={"bio"} />
+                 
                     </div>
                     
                     <div className="space-y-4">

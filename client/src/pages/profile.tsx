@@ -1,36 +1,72 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, DollarSign, ShoppingBag, Tag } from "lucide-react";
-
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader } from "../components/ui/card.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs.tsx";
-import { Badge } from "../components/ui/badge.tsx";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar.tsx";
-import { UserButton } from "../components/user-button.tsx";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Badge } from "../components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { UserButton } from "../components/user-button";
+import { useQuery } from "@tanstack/react-query";
+// @ts-ignore
+import { fetchUserDetails } from "../utils/http";
 
-// Mock user data
-const user = {
-  name: "John Smith",
-  email: "john.smith@college.edu",
-  rollNo: "CS2021032",
-  joinedDate: "2021-08-15",
-  avatar: "/placeholder.svg",
-  purchasedItems: [
-    { id: "101", name: "Scientific Calculator", price: 45, purchaseDate: "2023-04-10T14:30:00", image: "/placeholder.svg?height=100&width=100" },
-    { id: "102", name: "Physics Textbook", price: 60, purchaseDate: "2023-03-22T09:15:00", image: "/placeholder.svg?height=100&width=100" },
-  ],
-  activeBids: [
-    { id: "1", name: "MacBook Pro 2019", currentBid: 520, yourBid: 500, endTime: "2023-05-20T18:00:00", image: "/placeholder.svg?height=100&width=100" },
-    { id: "3", name: "Engineering Textbooks Bundle", currentBid: 85, yourBid: 85, endTime: "2023-05-21T20:00:00", image: "/placeholder.svg?height=100&width=100" },
-  ],
-  listedItems: [
-    { id: "201", name: "Desk Lamp", minBid: 15, currentBid: 22, endTime: "2023-05-25T15:00:00", bids: 4, image: "/placeholder.svg?height=100&width=100" },
-    { id: "202", name: "Chemistry Lab Kit", minBid: 40, currentBid: 40, endTime: "2023-05-28T12:00:00", bids: 0, image: "/placeholder.svg?height=100&width=100" },
-    { id: "203", name: "Wireless Headphones", minBid: 50, currentBid: 65, endTime: "2023-05-18T10:00:00", bids: 3, image: "/placeholder.svg?height=100&width=100" },
-  ],
-};
+export interface PurchasedItem {
+  id: string;
+  name: string;
+  price: number;
+  purchaseDate: string;
+  image: string;
+}
 
+export interface ActiveBid {
+  id: string;
+  name: string;
+  currentBid: number;
+  yourBid: number;
+  endTime: string;
+  image: string;
+}
+
+export interface ListedItem {
+  id: string;
+  name: string;
+  minBid: number;
+  currentBid: number;
+  endTime: string;
+  bids: number;
+  image: string;
+}
+
+export interface User {
+  name: string;
+  email: string;
+  rollNo: string;
+  avatar: string;
+  joinedDate: string;
+  purchasedItems: PurchasedItem[];
+  activeBids: ActiveBid[];
+  listedItems: ListedItem[];
+}
 export default function ProfilePage() {
+  const { id } = useParams();
+  if (!id) {
+    return <div>Error: User ID not found</div>;
+  }
+
+  const { data: user, isLoading, isError } = useQuery<User>({
+    queryKey: ["userDetails", id],
+    queryFn: () => fetchUserDetails(id), // Pass the ID to the function
+  });
+  console.log(user);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError || !user) {
+    return <div>Error loading user details</div>;
+  }
+
   return (
     <div className="min-h-screen bg-white text-green-900">
       {/* Header */}
@@ -63,9 +99,6 @@ export default function ProfilePage() {
               <Badge variant="outline" className="mt-2 px-3 text-green-700 border-green-600">
                 Roll No: {user.rollNo}
               </Badge>
-              <span className="text-xs text-muted-foreground">
-                Member since {new Date(user.joinedDate).toLocaleDateString()}
-              </span>
             </CardHeader>
             <CardContent>
               <div className="flex justify-center gap-4">
@@ -112,6 +145,39 @@ export default function ProfilePage() {
                       <Badge variant="outline" className="text-green-700 border-green-600">
                         {new Date(item.endTime) > new Date() ? "Active" : "Ended"}
                       </Badge>
+                    </div>
+                  ))}
+                </TabsContent>
+
+                {/* Active Bids Tab */}
+                <TabsContent value="bids">
+                  {user.activeBids.map((bid) => (
+                    <div key={bid.id} className="flex items-center gap-4 rounded-lg border p-3 hover:bg-green-50">
+                      <img src={bid.image} alt={bid.name} className="h-16 w-16 object-cover rounded-md" />
+                      <div className="flex-1">
+                        <h4 className="font-medium">{bid.name}</h4>
+                        <p className="text-sm text-green-700">Your Bid: ${bid.yourBid}</p>
+                        <p className="text-sm text-green-700">Current Bid: ${bid.currentBid}</p>
+                      </div>
+                      <Badge variant="outline" className="text-green-700 border-green-600">
+                        {new Date(bid.endTime) > new Date() ? "Active" : "Ended"}
+                      </Badge>
+                    </div>
+                  ))}
+                </TabsContent>
+
+                {/* Purchased Items Tab */}
+                <TabsContent value="purchased">
+                  {user.purchasedItems.map((item) => (
+                    <div key={item.id} className="flex items-center gap-4 rounded-lg border p-3 hover:bg-green-50">
+                      <img src={item.image} alt={item.name} className="h-16 w-16 object-cover rounded-md" />
+                      <div className="flex-1">
+                        <h4 className="font-medium">{item.name}</h4>
+                        <p className="text-sm text-green-700">Price: ${item.price}</p>
+                        <p className="text-sm text-green-700">
+                          Purchased On: {new Date(item.purchaseDate).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </TabsContent>

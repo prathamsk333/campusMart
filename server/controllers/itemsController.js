@@ -85,7 +85,7 @@ exports.createItem = catchAsync(async (req, res) => {
   });
 });
 
-// Update an item by ID
+// Update an item by IDl
 exports.updateItem = catchAsync(async (req, res, next) => {
   const updatedItem = await Item.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
