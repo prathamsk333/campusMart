@@ -1,7 +1,7 @@
 import axios from "axios";
 import getToken from "./getToken";
 
-const API_BASE_URL = "http://localhost:3000/api/v1";
+const API_BASE_URL = "http://localhost:3001/api/v1";
 
 
 
@@ -58,33 +58,6 @@ export async function fetchTour(tour) {
   }
 }
 
-export async function fetchBookings() {
-  try {
-    const token = getToken();
-    const response = await fetch(`${API_BASE_URL}/view/mybookings/getMyBookings`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      const error = new Error("Failed to fetch bookings");
-      error.status = response.status;
-      error.info = errorText;
-      throw error;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("fetchBookings error:", error);
-    throw error;
-  }
-}
-
 export async function loginPOST(credentials) {
   try {
     const response = await fetch(`${API_BASE_URL}/users/login`, {
@@ -102,14 +75,14 @@ export async function loginPOST(credentials) {
       error.info = errorText;
       throw error;
     }
-
+    console.log("Login response:", response);
     return await response.json();
   } catch (error) {
     console.error("Login error:", error);
     throw error;
   }
 }
-export async function fetchUserDetails(userId) {
+export async function fetchUserDetails() {
   try {
     const token = getToken();
     const response = await fetch(`${API_BASE_URL}/users/user`, {
@@ -118,8 +91,7 @@ export async function fetchUserDetails(userId) {
         "Content-Type": "application/json",
         Authorization: token ? `Bearer ${token}` : "",
       },
-      credentials: "include",
-      body: JSON.stringify({ userId }), // Send the ID in the request body
+      credentials: "include",      // Send the ID in the request body
     });
 
     if (!response.ok) {
@@ -188,7 +160,53 @@ export async function updateMe(credentials) {
     throw error;
   }
 }
+export async function createBid(productId, bidAmount) {
+  try {
+    const token = getToken();
+    
+    if (!token) {
+      throw new Error("Authentication required. Please log in to place a bid.");
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/items/bid`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+      body: JSON.stringify({
+       itemId: productId,
+        amount: bidAmount
+      }),
+    });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = "Failed to place bid";
+      
+      // Try to parse the error message if it's in JSON format
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorMessage;
+      } catch (e) {
+       console.error("Failed to parse error message:", e);
+      }
+      
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.info = errorText;
+      throw error;
+    }
+
+    const data = await response.json();
+    console.log("Bid created successfully:", data);
+    return data;
+  } catch (error) {
+    console.error("createBid error:", error);
+    throw error;
+  }
+}
 export async function checkoutSessionPOST(tourID, amount) {
   try {
     const token = getToken();
@@ -219,7 +237,7 @@ export async function checkoutSessionPOST(tourID, amount) {
 export async function getItemById(itemId) {
   try {
     const token = getToken(); // Retrieve the token if authentication is required
-    const response = await fetch(`${API_BASE_URL}/items/item/${itemId}`, {
+    const response = await fetch(`${API_BASE_URL}/items/item_details/${itemId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -236,23 +254,34 @@ export async function getItemById(itemId) {
       throw error;
     }
 
-    return (await response.json()).data?.item || null; // Return the item data
-  } catch (error) {
+    return await response.json(); } catch (error) {
     console.error("getItemById error:", error);
     throw error;
   }
 }
 export async function createItem(itemDetails) {
   try {
-    const token = getToken(); // Retrieve the token if authentication is required
-    const response = await fetch(`${API_BASE_URL}/items/create`, {
+    const token = getToken();
+    const formData = new FormData();
+    for (const key in itemDetails) {
+      if (key !== "images") {
+        formData.append(key, itemDetails[key]);
+      }
+    }
+    if (itemDetails.images && itemDetails.images.length) {
+      itemDetails.images.forEach((file) => {
+        formData.append("images", file); 
+      });
+    }
+    
+    console.log("Sending data to server with", itemDetails.images.length, "images");    
+    const response = await fetch(`${API_BASE_URL}/items/createItem`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: token ? `Bearer ${token}` : "", // Include token if available
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      credentials: "include", // Include cookies if needed
-      body: JSON.stringify(itemDetails), // Send item details in the request body
+      credentials: "include",
+      body: formData,
     });
 
     if (!response.ok) {
@@ -263,7 +292,7 @@ export async function createItem(itemDetails) {
       throw error;
     }
 
-    return await response.json(); // Return the response data
+    return await response.json();
   } catch (error) {
     console.error("createItem error:", error);
     throw error;

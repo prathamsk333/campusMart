@@ -51,10 +51,9 @@ export function BidForm({ productId, currentBid }: BidFormProps) {
     setTimeout(() => {
       console.log({ productId, bidAmount })
 
-      toast({
+      toast(`{
         title: "Bid placed successfully!",
-        description: `You've placed a bid of $${bidAmount} on this item.`,
-      })
+        description: You've placed a bid of $${bidAmount} on this item.}`)
 
       setIsSubmitting(false)
     }, 1000)

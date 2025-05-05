@@ -21,18 +21,11 @@ const userSchema = new mongoose.Schema({
   },
   rollNo: {
     type: String,
-    required: [true, "Please enter your roll no"],
-    unique: true,
+     unique: true,
     trim: true,
     minlength: 3,
   },
-  batch: { type: String, required: [true, "Please enter your batch"] },
-  hostname: { type: String, required: [true, "Please enter your hostname"] },
-  role: {
-    type: String,
-    default: "user",
-    enum: ["user", "guide", "lead-guide", "admin"],
-  },
+  
   password: {
     type: String,
     required: [true, "Please provide a password!"],
@@ -58,6 +51,17 @@ const userSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+  
+  phone: {
+    type: String,
+    required: [true, "Please provide your phone number!"],
+    validate: {
+      validator: function (v) {
+        return /\d{10}/.test(v);
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
+  },
 });
 
 userSchema.pre("save", async function (next) {
@@ -78,6 +82,48 @@ userSchema.methods.passwordCorrect = async function (
 ) {
   return await bcrypt.compare(candiatePassword, userPassword);
 };
+userSchema.pre("save", function (next) {
+  // Only run this function if rollNo is not already set (new user)
+  if (this.rollNo) return next();
+  
+  // Extract the email's local part (before @)
+  const email = this.email;
+  const localPart = email.split('@')[0];
+  
+  // Check if this is a student email (pattern: name+year+branch+number)
+  const studentEmailRegex = /^[a-z]+(\d{2})([a-z]+)(\d+)@iiitkottayam\.ac\.in$/;
+  const match = email.match(studentEmailRegex);
+  
+  if (match) {
+    // For student emails like sanjay23bcy51@iiitkottayam.ac.in
+    const year = match[1];
+    const branch = match[2];
+    const number = match[3];
+    
+    // Pad the number to 4 digits
+    const paddedNumber = number.padStart(4, '0');
+    
+    // Create roll number in format 20YYbcyNNNN
+    this.rollNo = `20${year}${branch}${paddedNumber}`;
+  } else {
+    // For non-standard emails, generate based on date
+    const now = new Date();
+    const year = now.getFullYear();
+    
+    // Get month name
+    const months = ["january", "february", "march", "april", "may", "june",
+                    "july", "august", "september", "october", "november", "december"];
+    const month = months[now.getMonth()];
+    
+    // Extract name from email (assuming format: name@domain)
+    const name = email.split('@')[0];
+    
+    // Create roll number in format YYYYmonthname
+    this.rollNo = `${year}${month}${name}`;
+  }
+  
+  next();
+});
 
 userSchema.pre(/^find/, function (next) {
   this.find({ active: true });

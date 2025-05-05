@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Leaf, LogIn, UserPlus } from 'lucide-react';
 import { setUser, setError } from "../utils/userslice";
 import Cookies from 'js-cookie';
@@ -25,11 +25,11 @@ interface LoginFormData {
   email: string;
   password: string;
 }
-
 interface SignUpFormData {
   name: string;
   email: string;
   password: string;
+  phone: string; // Added phone field
 }
 
 // Enhanced page transition variants
@@ -85,7 +85,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const { mutate, isLoading } = useMutation<UserData, Error, LoginFormData>({
     mutationFn: loginPOST,
     onSuccess: (data) => {
@@ -96,6 +96,7 @@ const Login = () => {
         email: data.email,
         phone: data.phone,
       }));
+      navigate('/dashboard');
     },
     onError: (error) => {
       dispatch(setError(error.message || "An unknown error occurred"));
@@ -204,17 +205,18 @@ interface SignupFormValues {
   email: string;
   password: string;
   confirmPassword: string;
+  phone: string; // Added phone field
 }
-
 const Signup = () => {
   const [formData, setFormData] = useState<SignupFormValues>({
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: '' // Initialize phone field
   });
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const { mutate, isLoading } = useMutation<UserData, Error, SignUpFormData>({
     mutationFn: signUpPOST,
     onSuccess: (data) => {
@@ -225,6 +227,7 @@ const Signup = () => {
         email: data.email,
         phone: data.phone,
       }));
+      navigate('/dashboard');
     },
     onError: (error) => {
       dispatch(setError(error.message || "An unknown error occurred"));
@@ -245,9 +248,7 @@ const Signup = () => {
       dispatch(setError("Passwords do not match!"));
       return;
     }
-    
-    const { confirmPassword, ...signUpData } = formData;
-    mutate(signUpData);
+    mutate(formData);
   };
 
   return (
@@ -304,11 +305,29 @@ const Signup = () => {
                 required
               />
             </motion.div>
+            {/* Add phone number field */}
             <motion.div 
               variants={inputVariants}
               initial="initial"
               animate="animate"
               custom={2}
+            >
+              <Label htmlFor="phone" className="text-green-800">Phone Number</Label>
+              <Input 
+                id="phone"
+                type="tel" 
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Your phone number"
+                className="border-green-300 focus:ring-green-500"
+                required
+              />
+            </motion.div>
+            <motion.div 
+              variants={inputVariants}
+              initial="initial"
+              animate="animate"
+              custom={3}
             >
               <Label htmlFor="password" className="text-green-800">Password</Label>
               <Input 
@@ -325,7 +344,7 @@ const Signup = () => {
               variants={inputVariants}
               initial="initial"
               animate="animate"
-              custom={3}
+              custom={4}
             >
               <Label htmlFor="confirmPassword" className="text-green-800">Confirm Password</Label>
               <Input 
@@ -342,7 +361,7 @@ const Signup = () => {
               variants={inputVariants}
               initial="initial"
               animate="animate"
-              custom={4}
+              custom={5}
             >
               <Button 
                 type="submit" 
@@ -356,7 +375,7 @@ const Signup = () => {
               variants={inputVariants}
               initial="initial"
               animate="animate"
-              custom={5}
+              custom={6}
               className="text-center mt-4"
             >
               <span className="text-sm text-green-800">
@@ -375,5 +394,4 @@ const Signup = () => {
     </motion.div>
   );
 };
-
 export { Login, Signup };

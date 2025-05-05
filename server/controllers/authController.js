@@ -28,9 +28,7 @@ const cookieOptions = {
 const createSendToken = async (user, statuscode, res) => {
   const token = signToken(user.id);
   if (process.env.NODE_ENV === "production") cookieOptions.secure = false;
-  // res.cookie('jwt', token, cookieOptions);
 
-  // remove password field
   user.password = undefined;
 
   const query = User.findById(user.id);
@@ -53,6 +51,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
+    passwordConfirm: req.body.confirmPassword,  
+    phone: req.body.phone,
   });
 
   const url = process.env.FROND_URL;
@@ -213,25 +213,40 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // 4) Log user in, send JWT
   createSendToken(user, 200, res);
-});
+}); // ...existing code...
 exports.getuserdetails = catchAsync(async (req, res, next) => {
-  const { id } = req.body; // Take the ID from the request body
-
+  const id = req.user.id;
+  console.log(id);
+  
   // Validate if the id is a valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return next(new AppError("Invalid user ID", 400));
   }
 
+  // First, get the basic user details without trying to populate fields
   const user = await User.findById(id);
 
   if (!user) {
     return next(new AppError("User not found", 404));
   }
 
+  // Create a base formatted user object
+  const formattedUser = {
+    name: user.name,
+    email: user.email,
+    rollNo: user.rollNo || "",
+    avatar: user.photo || "",
+    joinedDate: user.createdAt , 
+    purchasedItems: [],
+    activeBids: [],
+    listedItems: []
+  };
+
+  // Return the data we have now
   res.status(200).json({
     status: "success",
     data: {
-      user,
-    },
+      user: formattedUser
+    }
   });
 });

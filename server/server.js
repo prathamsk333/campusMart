@@ -8,7 +8,7 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-const port = 3000;
+const port = 3001;
 const server = app.listen(port, () => {
   console.log('server is running in the port 3000');
 });

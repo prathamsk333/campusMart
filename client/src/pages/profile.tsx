@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link} from "react-router-dom";
 import { ArrowLeft, DollarSign, ShoppingBag, Tag } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
@@ -48,14 +48,10 @@ export interface User {
   listedItems: ListedItem[];
 }
 export default function ProfilePage() {
-  const { id } = useParams();
-  if (!id) {
-    return <div>Error: User ID not found</div>;
-  }
-
+ 
   const { data: user, isLoading, isError } = useQuery<User>({
-    queryKey: ["userDetails", id],
-    queryFn: () => fetchUserDetails(id), // Pass the ID to the function
+    queryKey: ["userDetails"],
+    queryFn: () => fetchUserDetails(), // Pass the ID to the function
   });
   console.log(user);
 

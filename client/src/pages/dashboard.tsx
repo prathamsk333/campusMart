@@ -16,6 +16,7 @@ interface ProductCardProps {
     owner: string;
     shortDescription: string;
     images: string[];
+    status: string;
   };
 
 export default function DashboardPage() {
@@ -24,8 +25,7 @@ export default function DashboardPage() {
     queryKey: ["availableItems"],
     queryFn: fetchitems,
   });
-  const user = localStorage.getItem("user");
-  const userDetails = user ? JSON.parse(user) : '5c8a1e1a2f8fb814b56fa18';
+
   return (
     <div className="min-h-screen bg-white text-green-900">
       {/* Header */}
@@ -36,7 +36,7 @@ export default function DashboardPage() {
           </Link>
           <div className="flex items-center gap-4">
             <Button asChild variant="outline" size="sm" className="border-white text-green-900">
-                <Link to={`/profile/${userDetails.id}`}>My Profile</Link>
+                <Link to={`/profile`}>My Profile</Link>
             </Button>
             <UserButton />
           </div>
